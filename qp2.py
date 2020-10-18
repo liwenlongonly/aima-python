@@ -1,4 +1,6 @@
+# TODO import the necessary classes and methods
 from games import *
+import sys
 
 
 def game_state_input(file):
@@ -43,7 +45,7 @@ def gen_state(to_move='X', x_positions=[], o_positions=[], h=3, v=3):
         board[pos] = 'O'
     return GameState(to_move=to_move, utility=0, board=board, moves=moves)
 
-class TicTacToeTest(Game):
+class TicTacToePA2(Game):
     """Play TicTacToe on an h x v board, with Max (first player) playing 'X'.
     A state has the player to move, a cached utility, a list of moves in
     the form of a list of (x, y) positions, and a board, in the form of
@@ -144,18 +146,39 @@ class TicTacToeTest(Game):
 
 
 if __name__ == '__main__':
+    input_file = sys.argv[1]
+
+    # TODO implement
     state = game_state_input("example-input.txt")
-    ttt = TicTacToeTest(state)
-    ttt.display(state)
-    print(ttt.to_move(state))
-    print(state)
+    ttt = TicTacToePA2(state)
     minmax_decision(state, ttt)
+    # Starting from this state, populate the full game tree.
+    # The leaf nodes are the terminal states.
+    # The terminal state is terminal if a player wins or there are no empty squares.
+    # If a player wins, the state is considered terminal, even if there are still empty squares.
+    # Answer the following questions for this game tree.
+    print('How many terminal states are there?')
+    # TODO print the answer
     print(ttt.terminal_count)
+    print('In how many of those terminal states does X win?')
+    # TODO print the answer
     print(ttt.terminal_win)
+    print('In how many of those terminal states does X lose?')
+    # TODO print the answer
     print(ttt.terminal_loss)
+    print('In how many of those terminal states does X draw?')
+    # TODO print the answer
     print(ttt.terminal_draw)
+    print('How many non-terminal states are there?')
+    # TODO print the answer
     print(ttt.non_terminal_count+1)
+    print('In how many of those non-terminal states does X have a guranteed win?')
+    # TODO print the answer
     print(ttt.non_terminal_win)
+    print('In how many of those non-terminal states does X have a guranteed loss?')
+    # TODO print the answer
     print(ttt.non_terminal_loss)
+    print('In how many of those non-terminal states does X have a guranteed draw?')
+    # TODO print the answer
     print(ttt.non_terminal_draw)
-    # print(ttt.play_game(minmax_player, minmax_player))
+

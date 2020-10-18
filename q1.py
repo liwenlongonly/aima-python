@@ -1,4 +1,6 @@
+# TODO import the necessary classes and methods
 from games import *
+import sys
 
 
 def game_state_input(file):
@@ -43,7 +45,7 @@ def gen_state(to_move='X', x_positions=[], o_positions=[], h=3, v=3):
         board[pos] = 'O'
     return GameState(to_move=to_move, utility=0, board=board, moves=moves)
 
-class TicTacToeTest(Game):
+class TicTacToePA2(Game):
     """Play TicTacToe on an h x v board, with Max (first player) playing 'X'.
     A state has the player to move, a cached utility, a list of moves in
     the form of a list of (x, y) positions, and a board, in the form of
@@ -144,18 +146,23 @@ class TicTacToeTest(Game):
 
 
 if __name__ == '__main__':
+    input_file = sys.argv[1]
+
+    # TODO implement
     state = game_state_input("example-input.txt")
-    ttt = TicTacToeTest(state)
-    ttt.display(state)
+    ttt = TicTacToePA2(state)
+    print('Whose turn is it in this state?')
+    # TODO: print either X or O
     print(ttt.to_move(state))
-    print(state)
-    minmax_decision(state, ttt)
-    print(ttt.terminal_count)
-    print(ttt.terminal_win)
-    print(ttt.terminal_loss)
-    print(ttt.terminal_draw)
-    print(ttt.non_terminal_count+1)
-    print(ttt.non_terminal_win)
-    print(ttt.non_terminal_loss)
-    print(ttt.non_terminal_draw)
-    # print(ttt.play_game(minmax_player, minmax_player))
+    print(
+        'If both X and O play optimally from this state, does X have a guaranteed win, guaranteed loss, or guaranteed draw')
+    # TODO: print one of win, loss, draw
+    score = ttt.play_game(minmax_player, minmax_player)
+    if "O" in ttt.to_move(state):
+        score = -score
+    if score > 0:
+        print("win")
+    elif score < 0:
+        print("loss")
+    else:
+        print("draw")
