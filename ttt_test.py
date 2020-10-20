@@ -1,58 +1,9 @@
-from games import *
+from helper import *
 
 
-def game_state_input(file):
-    file = open(file, 'r', encoding='utf-8')
-    lines = file.readlines()
-    file.close()
-    y = 0
-    x_positions = []
-    o_positions = []
-    to_move = "X"
-    for line in lines:
-        y += 1
-        if not line.startswith('#'):
-            rs = line.replace('\n', '')
-            ar = rs.split(' ')
-            while '' in ar:
-                ar.remove("")
-            x = 0
-            for value in ar:
-                x += 1
-                if "X" in value:
-                    x_positions.append((y, x))
-                elif 'O' in value:
-                    o_positions.append((y, x))
-    if len(o_positions) < len(x_positions):
-        to_move = "O"
+class Statistics:
 
-    return gen_state(to_move=to_move, x_positions=x_positions, o_positions=o_positions)
-
-def gen_state(to_move='X', x_positions=[], o_positions=[], h=3, v=3):
-    """Given whose turn it is to move, the positions of X's on the board, the
-    positions of O's on the board, and, (optionally) number of rows, columns
-    and how many consecutive X's or O's required to win, return the corresponding
-    game state"""
-
-    moves = set([(x, y) for x in range(1, h + 1) for y in range(1, v + 1)]) - set(x_positions) - set(o_positions)
-    moves = list(moves)
-    board = {}
-    for pos in x_positions:
-        board[pos] = 'X'
-    for pos in o_positions:
-        board[pos] = 'O'
-    return GameState(to_move=to_move, utility=0, board=board, moves=moves)
-
-class TicTacToeTest(Game):
-    """Play TicTacToe on an h x v board, with Max (first player) playing 'X'.
-    A state has the player to move, a cached utility, a list of moves in
-    the form of a list of (x, y) positions, and a board, in the form of
-    a dict of {(x, y): Player} entries, where Player is 'X' or 'O'."""
-
-    def __init__(self, state=None, h=3, v=3, k=3):
-        self.h = h
-        self.v = v
-        self.k = k
+    def __init__(self):
         self.terminal_count = 0
         self.terminal_win = 0
         self.terminal_loss = 0
@@ -61,101 +12,49 @@ class TicTacToeTest(Game):
         self.non_terminal_win = 0
         self.non_terminal_loss = 0
         self.non_terminal_draw = 0
-        if state is None:
-            moves = [(x, y) for x in range(1, h + 1)
-                     for y in range(1, v + 1)]
-            self.initial = GameState(to_move='X', utility=0, board={}, moves=moves)
+
+def generate_tree(game, state, statistics):
+    tree = {}
+    if game.terminal_test(state):
+        statistics.terminal_count += 1
+        score = game.utility(state, "X")
+        if score > 0:
+            statistics.terminal_win += 1
+        elif score < 0:
+            statistics.terminal_loss += 1
         else:
-            self.initial = state
-
-    def actions(self, state):
-        """Legal moves are any square not yet taken."""
-        return state.moves
-
-    def result(self, state, move):
-        if move not in state.moves:
-            return state  # Illegal move has no effect
-        board = state.board.copy()
-        board[move] = state.to_move
-        moves = list(state.moves)
-        moves.remove(move)
-        return GameState(to_move=('O' if state.to_move == 'X' else 'X'),
-                         utility=self.compute_utility(board, move, state.to_move),
-                         board=board, moves=moves)
-
-    def utility(self, state, player):
-        """Return the value to player; 1 for win, -1 for loss, 0 otherwise."""
-        return state.utility if player == 'X' else -state.utility
-
-    def terminal_test(self, state):
-        terminal = state.utility != 0 or len(state.moves) == 0
-        """A state is terminal if it is won or there are no empty squares."""
-        if terminal:
-            self.terminal_count += 1
-            score = self.utility(state, "X")
-            if score > 0:
-                self.terminal_win += 1
-            elif score < 0:
-                self.terminal_loss += 1
-            else:
-                self.terminal_draw += 1
+            statistics.terminal_draw += 1
+        return tree
+    else:
+        statistics.non_terminal_count += 1
+        score = game.utility(state, "X")
+        if score > 0:
+            statistics.non_terminal_win += 1
+        elif score < 0:
+            statistics.non_terminal_loss += 1
         else:
-            self.non_terminal_count += 1
-            score = self.utility(state, "X")
-            if score > 0:
-                self.non_terminal_win += 1
-            elif score < 0:
-                self.non_terminal_loss += 1
-            else:
-                self.non_terminal_draw += 1
-        return terminal
-
-    def display(self, state):
-        board = state.board
-        for x in range(1, self.h + 1):
-            for y in range(1, self.v + 1):
-                print(board.get((x, y), '-'), end=' ')
-            print()
-
-    def compute_utility(self, board, move, player):
-        """If 'X' wins with this move, return 1; if 'O' wins return -1; else return 0."""
-        if (self.k_in_row(board, move, player, (0, 1)) or
-                self.k_in_row(board, move, player, (1, 0)) or
-                self.k_in_row(board, move, player, (1, -1)) or
-                self.k_in_row(board, move, player, (1, 1))):
-            return +1 if player == 'X' else -1
-        else:
-            return 0
-
-    def k_in_row(self, board, move, player, delta_x_y):
-        """Return true if there is a line through move on board for player."""
-        (delta_x, delta_y) = delta_x_y
-        x, y = move
-        n = 0  # n is number of moves in row
-        while board.get((x, y)) == player:
-            n += 1
-            x, y = x + delta_x, y + delta_y
-        x, y = move
-        while board.get((x, y)) == player:
-            n += 1
-            x, y = x - delta_x, y - delta_y
-        n -= 1  # Because we counted move itself twice
-        return n >= self.k
+            statistics.non_terminal_draw += 1
+    available_actions = game.actions(state)
+    for each_action in available_actions:
+        if each_action not in tree:
+            new_state = game.result(state, each_action)
+            tree[each_action] = generate_tree(game, new_state, statistics)
+    return tree
 
 
 if __name__ == '__main__':
     state = game_state_input("example-input.txt")
-    ttt = TicTacToeTest(state)
+    ttt = TicTacToePA2(state)
     ttt.display(state)
+    statistics = Statistics()
+    generate_tree(ttt, state, statistics)
     print(ttt.to_move(state))
     print(state)
-    minmax_decision(state, ttt)
-    print(ttt.terminal_count)
-    print(ttt.terminal_win)
-    print(ttt.terminal_loss)
-    print(ttt.terminal_draw)
-    print(ttt.non_terminal_count+1)
-    print(ttt.non_terminal_win)
-    print(ttt.non_terminal_loss)
-    print(ttt.non_terminal_draw)
-    # print(ttt.play_game(minmax_player, minmax_player))
+    print(statistics.terminal_count)
+    print(statistics.terminal_win)
+    print(statistics.terminal_loss)
+    print(statistics.terminal_draw)
+    print(statistics.non_terminal_count)
+    print(statistics.non_terminal_win)
+    print(statistics.non_terminal_loss)
+    print(statistics.non_terminal_draw)
