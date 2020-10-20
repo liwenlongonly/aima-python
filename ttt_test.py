@@ -44,11 +44,11 @@ def generate_tree(game, state, statistics):
 
 if __name__ == '__main__':
     state = game_state_input("example-input.txt")
-    ttt = TicTacToePA2(state)
+    ttt = TicTacToePA2()
     ttt.display(state)
     statistics = Statistics()
     generate_tree(ttt, state, statistics)
-    print(ttt.to_move(state))
+    # print(ttt.to_move(state))
     print(state)
     print(statistics.terminal_count)
     print(statistics.terminal_win)
