@@ -7,7 +7,7 @@ if __name__ == '__main__':
     input_file = sys.argv[1]
 
     # TODO implement
-    state = game_state_input("example-input.txt")
+    state = game_state_input(input_file)
     ttt = TicTacToePA2(state)
     print('Whose turn is it in this state?')
     # TODO: print either X or O

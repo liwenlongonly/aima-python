@@ -1,6 +1,16 @@
 from helper import *
 
 
+def printTree(tree, depth = 0):
+	#delete after you finish the homework
+	if tree == None or len(tree) == 0:
+		print ("\t" * depth, "-")
+	else:
+		for key, val in tree.items():
+			print("\t" * depth, key)
+			printTree(val, depth+1)
+
+
 class Statistics:
 
     def __init__(self):
@@ -47,7 +57,8 @@ if __name__ == '__main__':
     ttt = TicTacToePA2()
     ttt.display(state)
     statistics = Statistics()
-    generate_tree(ttt, state, statistics)
+    tree = generate_tree(ttt, state, statistics)
+    printTree(tree)
     # print(ttt.to_move(state))
     print(state)
     print(statistics.terminal_count)
